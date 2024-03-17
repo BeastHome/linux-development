@@ -14,44 +14,46 @@ except IndexError:
     domain_name = input ("Enter the domain to check: ")
 
 # Print the header.
-print (f"DNS for {domain_name}.")
+print (f"DNS for {domain_name}.\n")
 
 # Print the A record(s) for the domain.
 a_answers = dns.resolver.resolve(domain_name, 'A')
-print ("\nA record(s):")
+print ("A record(s):")
 for rdata in a_answers:
     print(rdata.address)
+print()
 
 # Print the SOA record for the domain.
 soa_answers = dns.resolver.resolve(domain_name, 'SOA')
-print ("\nSOA:")
+print ("SOA:")
 for rdata in soa_answers:
     print(f' serial: {rdata.serial} | tech: {rdata.rname} | mname: {rdata.mname}')
     print(f' refresh: {rdata.refresh} | retry: {rdata.retry} | expire: {rdata.expire} | minimum: {rdata.minimum}')
+print()
 
 # Print the nameservers for the domain with the related A record(s).
 ns_answers = dns.resolver.resolve(domain_name, 'NS')
-print("\nNameservers:")
+print("Nameservers:")
 for server in ns_answers:
     print(server.target)
     a_answers = dns.resolver.resolve(server.target, 'A')
-    print ("A record(s):")
     for rdata2 in a_answers:
         print(rdata2.address)
+    print()
 
 # Print the MX records for the domain with the related A record(s).
 mx_answers = dns.resolver.resolve(domain_name, 'MX',)
-print ("\nMX:")
+print ("MX:")
 for rdata in mx_answers:
     print('Host', rdata.exchange, 'has preference', rdata.preference)
     a_answers = dns.resolver.resolve(rdata.exchange, 'A')
-    print ("A record(s):")
     for rdata3 in a_answers:
         print(rdata3.address)
+    print()
 
 # Print the TXT record(s) for the domain.
 txt_answers = dns.resolver.resolve(domain_name, 'TXT')
-print ("\nTXT:")
+print ("TXT:")
 for rdata in txt_answers:
     for txt_string in rdata.strings:
         print (' TXT:', txt_string)
