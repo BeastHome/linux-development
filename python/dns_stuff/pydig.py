@@ -20,11 +20,11 @@ print (f"DNS for {domain_name}.")
 a_answers = dns.resolver.resolve(domain_name, 'A')
 print ("A record(s):")
 for rdata in a_answers:
-    print(rdata.address,"\n")
+    print(rdata.address)
 
 # Print the SOA record for the domain.
 soa_answers = dns.resolver.resolve(domain_name, 'SOA')
-print ("SOA:")
+print ("\nSOA:")
 for rdata in soa_answers:
     print(f' serial: {rdata.serial} | tech: {rdata.rname} | mname: {rdata.mname}')
     print(f' refresh: {rdata.refresh} | retry: {rdata.retry} | expire: {rdata.expire} | minimum: {rdata.minimum}')
