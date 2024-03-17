@@ -3,9 +3,13 @@
 # and outputting the information parsed in an easy to read format.
 
 # Written by David M Harris on 16 March 2024
+# dave@harris-services.com
 
+# Import the normal system calls, as well as ones from
+# the dnspython module.
 import sys
 import dns.resolver
+import dns.reversename
 
 # Take the domain as an argument or prompt for it.
 try:
@@ -48,7 +52,8 @@ for rdata in mx_answers:
     print('Host', rdata.exchange, 'has preference', rdata.preference)
     a_answers = dns.resolver.resolve(rdata.exchange, 'A')
     for rdata3 in a_answers:
-        print(rdata3.address)
+        reverse_addr = dns.reversename.from_address(rdata3.address)
+        print(rdata3.address, 'PTR:', dns.resolver.resolve(reverse_addr, "PTR")[0])
     print()
 
 # Print the TXT record(s) for the domain.
