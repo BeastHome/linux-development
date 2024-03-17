@@ -18,7 +18,7 @@ print (f"DNS for {domain_name}.")
 
 # Print the A record(s) for the domain.
 a_answers = dns.resolver.resolve(domain_name, 'A')
-print ("A record(s):")
+print ("\nA record(s):")
 for rdata in a_answers:
     print(rdata.address)
 
