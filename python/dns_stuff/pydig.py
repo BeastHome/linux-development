@@ -8,6 +8,7 @@
 # Import the normal system calls, as well as ones from
 # the dnspython module.
 import sys
+import dns.name
 import dns.resolver
 import dns.reversename
 
