@@ -19,8 +19,12 @@ try:
 except IndexError:
     domain_name = input ("Enter the domain to check: ")
 
+def get_a_records(a_answers):
+        for rdata in a_answers:
+            print(rdata.address)
+
 # Function that does all of the work.
-def get_records(domain_name):
+def get_dns_records(domain_name):
     # Sets the resolver to one that works with DNSSEC.
     resolver = dns.resolver.Resolver()
     resolver.nameservers = ['4.2.2.1']
@@ -31,8 +35,7 @@ def get_records(domain_name):
     # Print the A record(s) for the domain.
     a_answers = resolver.resolve(domain_name, 'A')
     print ("A record(s):")
-    for rdata in a_answers:
-        print(rdata.address)
+    get_a_records(a_answers)
     print()
 
     # Print the SOA record for the domain.
@@ -49,8 +52,7 @@ def get_records(domain_name):
     for server in ns_answers:
         print(server.target)
         a_answers = resolver.resolve(server.target, 'A')
-        for rdata2 in a_answers:
-            print(rdata2.address)
+        get_a_records(a_answers)
         print()
 
     # Print the MX records for the domain with the related A record(s).
@@ -59,9 +61,9 @@ def get_records(domain_name):
     for rdata in mx_answers:
         print('Host', rdata.exchange, 'has preference', rdata.preference)
         a_answers = resolver.resolve(rdata.exchange, 'A')
-        for rdata3 in a_answers:
-            reverse_addr = dns.reversename.from_address(rdata3.address)
-            print(rdata3.address, 'PTR:', resolver.resolve(reverse_addr, "PTR")[0])
+        for mx_rdata in a_answers:
+            reverse_addr = dns.reversename.from_address(mx_rdata.address)
+            print(mx_rdata.address, 'PTR:', resolver.resolve(reverse_addr, "PTR")[0])
         print()
 
     # Print the TXT record(s) for the domain.
@@ -77,6 +79,6 @@ def get_records(domain_name):
 # running the function if it is registered.
 try:
     get_info = whois.query(domain_name)
-    get_records(domain_name)
-except:
+    get_dns_records(domain_name)
+except Exception:
     print(f"The domain {domain_name} is not registered.")
