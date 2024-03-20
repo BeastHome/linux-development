@@ -1,18 +1,19 @@
 #!/usr/bin/env python
-# Python program to mimic doing multiple dig commands in bash,
-# and outputting the information parsed in an easy to read format.
+# Python program to mimic doing multiple dig commands in bash and providing the information parsed in an easy to read format.
 
 # Written by David M Harris on 16 March 2024
+# Last modified 20 March 2024
 # dave@harris-services.com
 
-# Import the normal system calls, as well as ones from
-# the dnspython module.
+# Import the normal system calls, as well as the dnspython, tldextract and python-whois modules.
 import sys
-import dns.name
+import dns.name # pip install dnspython
 import dns.resolver
-import dns.reversename
-import whois
-import tldextract
+import dns.reversename 
+import re
+import tldextract # pip install tldextract
+from urllib.parse import urlparse   # Needed in order to strip the protocol and trailing path from entries.
+import whois # pip install python-whois
 
 # Take the domain as an argument or prompt for it.
 try:
@@ -21,8 +22,8 @@ except IndexError:
     entered_domain_name = input ("Enter the domain to check: ")
 
 # Extracts the domain name from a subdomain
-domain_name = tldextract.extract(entered_domain_name).registered_domain
-fqdn_domain_name = domain_name = tldextract.extract(entered_domain_name).fqdn
+clean_domain_name = urlparse(entered_domain_name).hostname
+domain_name = tldextract.extract(clean_domain_name).fqdn
 
 # Function to get A recrords from other records.
 def get_a_records(a_answers):
@@ -35,7 +36,6 @@ resolver.nameservers = ['4.2.2.1']
 
 # Function that does all of the work.
 def get_dns_records(domain_name):
-
     # Print the header.
     print (f"DNS for {domain_name}.\n")
 
@@ -86,20 +86,24 @@ def get_dns_records(domain_name):
             print (trimmed_txt_value)
     sys.exit()
 
-# Checking whois to see if the domain is registeed, printing a message if not, or
-# running the function if it is registered.
-get_info = (whois.whois(domain_name)).domain
+# Checking whois to see if the domain is registeed, printing a message if not, or running the function if it is registered.
+get_info = (whois.whois(domain_name)).domain_name
+# Checks to see if the domain is based on a valid extension.
 if not get_info:
     print('Invalid domain.  Please check the spelling of the domain, or ensure a subdomain is not entered.')
     sys.exit()
+# Then checks to see if the entry is the parent domain.
 if get_info == domain_name:
     get_dns_records(domain_name)
     sys.exit()
+# Finally it checks to see if it is a subdomain and prints the A record(s) for the subdomain.
 if get_info != domain_name:
-    print (f'The entry {entered_domain_name} is a subdomain of {get_info} and has the A record(s):')
-    a_answers = resolver.resolve(entered_domain_name, 'A')
+    print (f'The entry {clean_domain_name} is a subdomain of {get_info} and has the A record(s):')
+    # These next three lines print the A record(s) and then a blank line.
+    a_answers = resolver.resolve(clean_domain_name, 'A')
     get_a_records(a_answers)
     print()
     get_dns_records(get_info)
+# Exits cleanly if none of the above are caught.
 else:
     sys.exit()
