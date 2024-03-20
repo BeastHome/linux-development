@@ -12,22 +12,29 @@ import dns.name
 import dns.resolver
 import dns.reversename
 import whois
+import tldextract
 
 # Take the domain as an argument or prompt for it.
 try:
-    domain_name = sys.argv[1]
+    entered_domain_name = sys.argv[1]
 except IndexError:
-    domain_name = input ("Enter the domain to check: ")
+    entered_domain_name = input ("Enter the domain to check: ")
 
+# Extracts the domain name from a subdomain
+domain_name = tldextract.extract(entered_domain_name).registered_domain
+fqdn_domain_name = domain_name = tldextract.extract(entered_domain_name).fqdn
+
+# Function to get A recrords from other records.
 def get_a_records(a_answers):
         for rdata in a_answers:
             print(rdata.address)
 
+# Sets the resolver to one that works with DNSSEC.
+resolver = dns.resolver.Resolver()
+resolver.nameservers = ['4.2.2.1']
+
 # Function that does all of the work.
 def get_dns_records(domain_name):
-    # Sets the resolver to one that works with DNSSEC.
-    resolver = dns.resolver.Resolver()
-    resolver.nameservers = ['4.2.2.1']
 
     # Print the header.
     print (f"DNS for {domain_name}.\n")
@@ -81,11 +88,18 @@ def get_dns_records(domain_name):
 
 # Checking whois to see if the domain is registeed, printing a message if not, or
 # running the function if it is registered.
-try:
-    get_info = whois.whois(domain_name)
-    if get_info.domain != domain_name:
-        print('Invalid domain...')
-    else:
-        get_dns_records(domain_name)
-except whois.parser.PywhoisError:
-    print(f"The domain {domain_name} is not registered.")
+get_info = (whois.whois(domain_name)).domain
+if not get_info:
+    print('Invalid domain.  Please check the spelling of the domain, or ensure a subdomain is not entered.')
+    sys.exit()
+if get_info == domain_name:
+    get_dns_records(domain_name)
+    sys.exit()
+if get_info != domain_name:
+    print (f'The entry {entered_domain_name} is a subdomain of {get_info} and has the A record(s):')
+    a_answers = resolver.resolve(entered_domain_name, 'A')
+    get_a_records(a_answers)
+    print()
+    get_dns_records(get_info)
+else:
+    sys.exit()
