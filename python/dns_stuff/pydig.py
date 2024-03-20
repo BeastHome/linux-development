@@ -60,11 +60,14 @@ def get_dns_records(domain_name):
     print ("MX:")
     for rdata in mx_answers:
         print('Host', rdata.exchange, 'has preference', rdata.preference)
-        a_answers = resolver.resolve(rdata.exchange, 'A')
-        for mx_rdata in a_answers:
-            reverse_addr = dns.reversename.from_address(mx_rdata.address)
-            print(mx_rdata.address, 'PTR:', resolver.resolve(reverse_addr, "PTR")[0])
-        print()
+        try:
+            a_answers = resolver.resolve(rdata.exchange, 'A')
+            for mx_rdata in a_answers:
+                reverse_addr = dns.reversename.from_address(mx_rdata.address)
+                print(mx_rdata.address, 'PTR:', resolver.resolve(reverse_addr, "PTR")[0])
+            print()
+        except Exception:
+            print()
 
     # Print the TXT record(s) for the domain.
     txt_answers = resolver.resolve(domain_name, 'TXT')
@@ -74,11 +77,15 @@ def get_dns_records(domain_name):
             txt_value = str(txt_string)
             trimmed_txt_value = txt_value[1:]
             print (trimmed_txt_value)
+    sys.exit()
 
 # Checking whois to see if the domain is registeed, printing a message if not, or
 # running the function if it is registered.
 try:
-    get_info = whois.query(domain_name)
-    get_dns_records(domain_name)
-except Exception:
+    get_info = whois.whois(domain_name)
+    if get_info.domain != domain_name:
+        print('Invalid domain...')
+    else:
+        get_dns_records(domain_name)
+except whois.parser.PywhoisError:
     print(f"The domain {domain_name} is not registered.")
