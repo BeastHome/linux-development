@@ -9,9 +9,9 @@
 import sys
 import dns.name # pip install dnspython
 import dns.resolver
-import dns.reversename 
+import dns.reversename
+from rich import print as rprint # pip install rich
 import tldextract # pip install tldextract
-from urllib.parse import urlparse   # Needed in order to strip the protocol and trailing path from entries.
 import whois # pip install python-whois
 
 # Take the domain as an argument or prompt for it.
@@ -21,11 +21,11 @@ except IndexError:
     entered_domain_name = input ("Enter the domain to check: ")
 
 # Extracts the domain name from a subdomain
-clean_domain_name = urlparse(entered_domain_name).hostname
-domain_name = tldextract.extract(clean_domain_name).registered_domain
+clean_domain_name = tldextract.extract(entered_domain_name).fqdn
+domain_name = tldextract.extract(entered_domain_name).registered_domain
 
-print(clean_domain_name, domain_name)
-
+#print(clean_domain_name, domain_name)
+#sys.exit()
 # Function to get A recrords from other records.
 def get_a_records(a_answers):
         for rdata in a_answers:
@@ -38,11 +38,11 @@ resolver.nameservers = ['4.2.2.1']
 # Function that does all of the work.
 def get_dns_records(domain_name):
     # Print the header.
-    print (f"DNS for {domain_name}.\n")
+    rprint (f"DNS for [green1]{domain_name}[/].\n")
 
     # Print the A record(s) for the domain.
     a_answers = resolver.resolve(domain_name, 'A')
-    print ("A record(s):")
+    rprint ("[cyan]A record(s):[/]")
     get_a_records(a_answers)
     print()
 
@@ -88,23 +88,32 @@ def get_dns_records(domain_name):
     sys.exit()
 
 # Checking whois to see if the domain is registeed, printing a message if not, or running the function if it is registered.
-get_info = (whois.whois(domain_name)).domain_name
+try:
+    get_info = (whois.whois(domain_name))
+#getinfo2 = pythonwhois.whois(domain_name)
+#print (getinfo2)
+#sys.exit()
 # Checks to see if the domain is based on a valid extension.
-if not get_info:
-    print('Invalid domain.  Please check the spelling of the domain, or ensure a subdomain is not entered.')
-    sys.exit()
-# Then checks to see if the entry is the parent domain.
-if clean_domain_name == domain_name:
-    get_dns_records(domain_name)
-    sys.exit()
-# Finally it checks to see if it is a subdomain and prints the A record(s) for the subdomain.
-if domain_name != clean_domain_name:
-    print (f'The entry {clean_domain_name} is a subdomain of {domain_name} and has the A record(s):')
-    # These next three lines print the A record(s) and then a blank line.
-    a_answers = resolver.resolve(clean_domain_name, 'A')
-    get_a_records(a_answers)
-    print()
-    get_dns_records(domain_name)
-# Exits cleanly if none of the above are caught.
-else:
-    sys.exit()
+    if not get_info.domain:
+        rprint('[red]Invalid domain.  Please check the spelling of the domain!!![/]')
+        sys.exit()
+    if not get_info.creation_date:
+            rprint(f'[orange3]Domain[/] [green1]{clean_domain_name}[/] [orange3]is not registeed[/].')
+            sys.exit()
+    # Then checks to see if the entry is the parent domain.
+    if domain_name == clean_domain_name:
+        get_dns_records(domain_name)
+        sys.exit()
+    # Finally it checks to see if it is a subdomain and prints the A record(s) for the subdomain.
+    if domain_name != clean_domain_name:
+        rprint (f'The entry [green1]{clean_domain_name}[/] is a subdomain of [green1]{domain_name}[/] and has the A [white]record(s):')
+        # These next three lines print the A record(s) and then a blank line.
+        a_answers = resolver.resolve(clean_domain_name, 'A')
+        get_a_records(a_answers)
+        print()
+        get_dns_records(domain_name)
+    # Exits cleanly if none of the above are caught.
+    else:
+        sys.exit()
+except (whois.parser.PywhoisError) as e:
+    print(f"Error: {e}")
