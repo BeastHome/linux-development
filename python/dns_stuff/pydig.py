@@ -10,7 +10,6 @@ import sys
 import dns.name # pip install dnspython
 import dns.resolver
 import dns.reversename 
-import re
 import tldextract # pip install tldextract
 from urllib.parse import urlparse   # Needed in order to strip the protocol and trailing path from entries.
 import whois # pip install python-whois
@@ -23,7 +22,9 @@ except IndexError:
 
 # Extracts the domain name from a subdomain
 clean_domain_name = urlparse(entered_domain_name).hostname
-domain_name = tldextract.extract(clean_domain_name).fqdn
+domain_name = tldextract.extract(clean_domain_name).registered_domain
+
+print(clean_domain_name, domain_name)
 
 # Function to get A recrords from other records.
 def get_a_records(a_answers):
@@ -93,17 +94,17 @@ if not get_info:
     print('Invalid domain.  Please check the spelling of the domain, or ensure a subdomain is not entered.')
     sys.exit()
 # Then checks to see if the entry is the parent domain.
-if get_info == domain_name:
+if clean_domain_name == domain_name:
     get_dns_records(domain_name)
     sys.exit()
 # Finally it checks to see if it is a subdomain and prints the A record(s) for the subdomain.
-if get_info != domain_name:
-    print (f'The entry {clean_domain_name} is a subdomain of {get_info} and has the A record(s):')
+if domain_name != clean_domain_name:
+    print (f'The entry {clean_domain_name} is a subdomain of {domain_name} and has the A record(s):')
     # These next three lines print the A record(s) and then a blank line.
     a_answers = resolver.resolve(clean_domain_name, 'A')
     get_a_records(a_answers)
     print()
-    get_dns_records(get_info)
+    get_dns_records(domain_name)
 # Exits cleanly if none of the above are caught.
 else:
     sys.exit()
