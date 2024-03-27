@@ -2,7 +2,7 @@
 # Python program to mimic doing multiple dig commands in bash and providing the information parsed in an easy to read format.
 
 # Written by David M Harris on 16 March 2024
-# Last modified 21 March 2024
+# Last modified 26 March 2024
 # dave@harris-services.com
 
 # Import the normal system calls, as well as the dnspython, rich, tldextract and python-whois modules.
@@ -40,7 +40,7 @@ def resolve_dns(record_label, domain_name, record_type):
     print(record_label)
     return resolver.resolve(domain_name, record_type)
 
-# Function that does all of the work.
+# Function that does the work of getting the various DNS records.
 def get_dns_records(domain_name):
     # Print the header.
     rprint (f"DNS for [green1]{domain_name}[/].\n")
@@ -104,17 +104,16 @@ except Exception:
     dns_failed = 'True'
     #print(Exception, dns_failed)
 
+# Getting whois information for the parent domain entered.
 try:
     get_info = (whois.whois(domain_name))
-#getinfo2 = pythonwhois.whois(domain_name)
-#print (getinfo2)
-#sys.exit()
 
-# Checks to see if the domain is based on a valid extension.
+    # Checks to see if the domain is based on a valid extension.
     if not get_info.domain:
         rprint('[red]Invalid domain.  Please check the spelling of the domain!!![/]')
         sys.exit()
 
+    # Checks to see if the domain is registered.
     if dns_failed != domain_name:
         try:
             rprint(f'[orange3]Domain[/] [green1]{clean_domain_name}[/] [orange3]is not registeed.[/]')
@@ -122,6 +121,7 @@ try:
         except Exception:
             sys.exit()
 
+    # Checks to see if the domain is not able to be checked by the Python whois module.
     if not get_info.creation_date:
         rprint(f'[orange3]Domain[/] [green1]{clean_domain_name}[/] [orange3]cannot be checked by the whois module.[/]')
         # If the domain is not able to be checked via whois correctly the user is prompted to see if they want to get the DNS anyway.
@@ -132,21 +132,25 @@ try:
         else:
             sys.exit()
     
-    # Then checks to see if the entry is the parent domain.
+    # Checks to see if the entry is the parent domain.
     if domain_name == clean_domain_name:
         get_dns_records(domain_name)
         sys.exit()
-    # Finally it checks to see if it is a subdomain and prints the A record(s) for the subdomain.
+        
+    # Checks to see if the entry is a subdomain and prints the A record(s) for the subdomain, and then prints the rest of the DNS.
     if domain_name != clean_domain_name:
         rprint (f'The entry [green1]{clean_domain_name}[/] is a subdomain of [green1]{domain_name}[/] and has the A [white]record(s):')
         # These next three lines print the A record(s) and then a blank line.
         a_answers = resolver.resolve(clean_domain_name, 'A')
         get_a_records(a_answers)
         print()
+        # Print the rest of DNS for the domain.
         get_dns_records(domain_name)
     # Exits cleanly if none of the above are caught.
     else:
         sys.exit()
+    
+# Prints any errors that are not caught by the above.
 except (whois.parser.PywhoisError) as e:
     print(f"Error: {e}")
-    #rprint(f'[orange3]Exception: Domain[/] [green1]{clean_domain_name}[/] [orange3]is not registeed.[/]')
+    sys.exit()
