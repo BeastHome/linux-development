@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # Python program to mimic doing multiple dig commands in bash and providing the information parsed in an easy to read format.
 
 # Written by David M Harris on 16 March 2024
