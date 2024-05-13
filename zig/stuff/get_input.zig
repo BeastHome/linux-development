@@ -1,10 +1,10 @@
 const std = @import("std");
-
-const keyboard = std.io.getStdIn().reader();
+const print = std.debug.print;
+const user_input = std.io.getStdIn().reader();
 
 pub fn main() !void {
-    std.debug.print("Enter your name: ", .{});
+    print("Enter your name: ", .{});
     var buffer: [100]u8 = undefined;
-    const input = try keyboard.readUntilDelimiter(&buffer, '\n');
-    std.debug.print("Your name is {s}.\n", .{input});
+    const person_name = try user_input.readUntilDelimiter(&buffer, '\n');
+    print("Your name is {s}.\n", .{person_name});
 }

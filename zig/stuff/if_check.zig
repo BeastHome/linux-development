@@ -1,14 +1,15 @@
 const std = @import("std");
+const print = std.debug.print;
 
 pub fn main() void {
     const score: u8 = 100;
 
     if (score >= 90) {
-        std.debug.print("Congrats!\n", .{});
-        std.debug.print("{s}\n", .{"*" ** 15});
+        print("Congrats!\n", .{});
+        print("{s}\n", .{"*" ** 15});
     } else if (score >= 50) {
-        std.debug.print("Congrats!\n", .{});
+        print("Congrats!\n", .{});
     } else {
-        std.debug.print("Try again...\n", .{});
+        print("Try again...\n", .{});
     }
 }
