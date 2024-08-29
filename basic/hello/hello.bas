@@ -1,2 +1,3 @@
-print "Hello World!"
-
+hello:
+print "Hello World! ";
+goto hello:
