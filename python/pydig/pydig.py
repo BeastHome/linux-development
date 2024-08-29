@@ -18,7 +18,7 @@ import whois # pip install python-whois as well as pip install python-dateutil i
 try:
     entered_domain_name = sys.argv[1]
 except IndexError:
-    print('Enter the domain to check: ', end='')
+    rprint('Enter the domain to check: ', end='')
     entered_domain_name = input()
 
 # Extracts the domain name from a subdomain
@@ -32,59 +32,59 @@ resolver.nameservers = ['4.2.2.1']
 # Function to get A recrords from other records.
 def get_a_records(a_answers):
         for rdata in a_answers:
-            print(rdata.address)
+            rprint(rdata.address)
 
 # Function that retreives SOA and NS information.
 def resolve_dns(record_label, domain_name, record_type):
-    print()
-    print(record_label)
+    rprint()
+    rprint(record_label)
     return resolver.resolve(domain_name, record_type)
 
 # Function that does the work of getting the various DNS records.
 def get_dns_records(domain_name):
     # Print the header.
-    rprint (f"DNS for [green1]{domain_name}[/].\n")
+    rprint (f"[dark_orange]DNS for [green1]{domain_name}[/].\n")
 
     # Print the A record(s) for the domain.
-    rprint ("[cyan]A record(s):[/]")
+    rprint ("[dark_orange]A record(s):[/]")
     a_answers = resolver.resolve(domain_name, 'A')
     get_a_records(a_answers)
 
     # Print the SOA record for the domain.
-    soa_answers = resolve_dns("SOA:", domain_name, 'SOA')
+    soa_answers = resolve_dns("[dark_orange]SOA:[/]", domain_name, 'SOA')
     for rdata in soa_answers:
-        print(f' serial: {rdata.serial} | tech: {rdata.rname} | mname: {rdata.mname}')
-        print(f' refresh: {rdata.refresh} | retry: {rdata.retry} | expire: {rdata.expire} | minimum: {rdata.minimum}')
+        rprint(f' serial: {rdata.serial} | tech: {rdata.rname} | mname: {rdata.mname}')
+        rprint(f' refresh: {rdata.refresh} | retry: {rdata.retry} | expire: {rdata.expire} | minimum: {rdata.minimum}')
 
     # Print the nameservers for the domain with the related A record(s).
-    ns_answers = resolve_dns("Nameservers:", domain_name, 'NS')
+    ns_answers = resolve_dns("[dark_orange]Nameservers:[/]", domain_name, 'NS')
     for server in ns_answers:
-        print(server.target)
+        rprint(server.target)
         a_answers = resolver.resolve(server.target, 'A')
         get_a_records(a_answers)
-        print()
+        rprint()
 
     # Print the MX records for the domain with the related A record(s).
-    print ("MX:")
+    rprint ("[dark_orange]MX:[/]")
     try:
         mx_answers = resolver.resolve(domain_name, 'MX',)
         try:
             for rdata in mx_answers:
-                print('Host', rdata.exchange, 'has preference', rdata.preference)
+                rprint('[hot_pink]Host[/]', rdata.exchange, '[hot_pink]has preference[/]', rdata.preference,)
                 try:
                     a_answers = resolver.resolve(rdata.exchange, 'A')
                     for mx_rdata in a_answers:
-                        print(mx_rdata.address, 'PTR:', resolver.resolve((dns.reversename.from_address(mx_rdata.address)), "PTR")[0])
-                    print()
+                        rprint(mx_rdata.address, '[hot_pink]PTR:[/]', resolver.resolve((dns.reversename.from_address(mx_rdata.address)), "PTR")[0])
+                    rprint()
                 except Exception:
-                    print()
+                    rprint()
         except Exception:
-            print()
+            rprint()
     except Exception:
-        print('There are no MX records defined.\n')
+        rprint('[red]There are no MX records defined.[/]\n')
 
     # Print the TXT record(s) for the domain.
-    print ("TXT:")
+    rprint ("[dark_orange]TXT:[/]")
     try:
         txt_answers = resolver.resolve(domain_name, 'TXT')
         for rdata in txt_answers:
@@ -92,7 +92,7 @@ def get_dns_records(domain_name):
                 print(str(txt_string, 'utf-8'))
         sys.exit()
     except Exception:
-        print('There are no TXT records defined.\n')
+        rprint('There are no TXT records defined.\n')
         sys.exit()
 
 # Performing the base whois check to be used later.
@@ -121,22 +121,11 @@ try:
         except Exception:
             sys.exit()
 
-    # Checks to see if the domain is not able to be checked by the Python whois module.
-    if not get_info.creation_date:
-        rprint(f'[orange3]Domain[/] [green1]{clean_domain_name}[/] [orange3]cannot be checked by the whois module.[/]')
-        # If the domain is not able to be checked via whois correctly the user is prompted to see if they want to get the DNS anyway.
-        print('Do you want to to get DNS for the domain anyhow? (Y or N): ', end='')
-        continue_to_dns = input()
-        if continue_to_dns in ('y', 'Y', 'Yes', 'YES', 'yes'):
-            get_dns_records(domain_name)
-        else:
-            sys.exit()
-    
     # Checks to see if the entry is the parent domain.
     if domain_name == clean_domain_name:
         get_dns_records(domain_name)
         sys.exit()
-        
+
     # Checks to see if the entry is a subdomain and prints the A record(s) for the subdomain, and then prints the rest of the DNS.
     if domain_name != clean_domain_name:
         rprint (f'The entry [green1]{clean_domain_name}[/] is a subdomain of [green1]{domain_name}[/] and has the A [white]record(s):')
@@ -149,8 +138,37 @@ try:
     # Exits cleanly if none of the above are caught.
     else:
         sys.exit()
+
+    # Checks to see if the domain is not able to be checked by the Python whois module.
+    if not get_info.creation_date:
+        rprint(f'[orange3]Domain[/] [green1]{clean_domain_name}[/] [orange3]cannot be checked by the whois module.[/]')
+        # If the domain is not able to be checked via whois correctly the user is prompted to see if they want to get the DNS anyway.
+        print('Do you want to to get DNS for the domain anyhow? (Y or N): ', end='')
+        continue_to_dns = input()
+        if continue_to_dns in ('y', 'Y', 'Yes', 'YES', 'yes'):
+            get_dns_records(domain_name)
+        else:
+            sys.exit()
+    
+    # Checks to see if the entry is the parent domain.
+    #if domain_name == clean_domain_name:
+    #    get_dns_records(domain_name)
+    #    sys.exit()
+        
+    # Checks to see if the entry is a subdomain and prints the A record(s) for the subdomain, and then prints the rest of the DNS.
+    #if domain_name != clean_domain_name:
+    #    rprint (f'The entry [green1]{clean_domain_name}[/] is a subdomain of [green1]{domain_name}[/] and has the A [white]record(s):')
+        # These next three lines print the A record(s) and then a blank line.
+    #    a_answers = resolver.resolve(clean_domain_name, 'A')
+    #    get_a_records(a_answers)
+    #    rprint()
+        # Print the rest of DNS for the domain.
+    #    get_dns_records(domain_name)
+    # Exits cleanly if none of the above are caught.
+    #else:
+    #    sys.exit()
     
 # Prints any errors that are not caught by the above.
 except (whois.parser.PywhoisError) as e:
-    print(f"Error: {e}")
+    rprint(f"Error: {e}")
     sys.exit()
