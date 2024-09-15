@@ -1,5 +1,3 @@
-call hello
-
-hello:
+do forever
 say "Hello World!"
-exit
+end
