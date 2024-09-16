@@ -46,3 +46,5 @@ s3 = overlay('RAT',s3,POS('CAT',s3))
 say space(s3,0)
 
 say delstr(s3,pos('T ',s3),2)
+
+say time() 'on' date('O')
