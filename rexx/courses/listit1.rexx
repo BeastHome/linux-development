@@ -1,32 +1,32 @@
-/* Rexx exec to list data sets (lab 10, part 1) */
-Parse Upper Arg dsn                         /* get the data set name */
-Do While dsn = ''                           /* is it null?           */
-   Say "Enter data set name:"               /* yes, so prompt them   */
-   Parse Upper Pull dsn                     /* get the data set name */
-End /* While */
-msg = SYSDSN(dsn)                           /* is data set okay?     */
-If msg = 'OK' Then                          /* yup.                  */
-   Do
-      "ALLOC FI(INDD) DA("dsn") SHR REUSE"  /* assign ddname to dsn  */
-      If rc \= 0 Then Call Error "ALLOC" rc /* error with alloc cmd  */
+/* REXX lab 10.1 */
+parse upper arg dsn                         /* get data set name */
+do while dsn = ''                           /* is it null? */
+   say "Enter data set name:"               /* prompt them if yes */
+   parse upper pull dsn                     /* get the data set name */
+end
+msg = SYSDSN(dsn)                           /* valid data set? */
+if msg = 'OK' then                          /* yes */
+   do
+      "ALLOC FI(INDD) DA("dsn") SHR REUSE"  /* assign ddname to dsn */
+      if rc \= 0 then call error "ALLOC" rc /* error with alloc */
       "EXECIO * DISKR INDD (STEM REC. FINIS"/* read data set to rec. */
-      If rc \= 0 Then Call Error "EXECIO" rc/* error with execio cmd */
-      "FREE FI(INDD)"                       /* release ddname        */
-      Do i = 1 To rec.0                     /* step through vars and */
-         rec.i = Strip(rec.i,'T')           /* remove trailing blanks*/
-         Say rec.i                          /* and display each one  */
-      End i
-   End /* Then Do */
-Else
-   Call Error "SYSDSN" msg                  /* error with sysdsn()   */
-Exit 0                                      /* bye, rc=0             */
-Error:                                      /* my error routine      */
-Parse Arg xfcn xmsg                         /* get passed args       */
-Say "Error processing data set:" dsn        /* general error msg     */
-If xfcn = 'ALLOC' Then                      /* problem with allocate */
-   Say "Return Code from ALLOC is:" xmsg    /* say ALLOC message     */
-If xfcn = 'EXECIO' Then                     /* problem with execio   */
-   Say "Return Code from EXECIO is:" xmsg   /* say EXECIO message    */
-If xfcn = 'SYSDSN' Then                     /* problem with data set */
-   Say "Error from SYSDSN is:" xmsg         /* say SYSDSN message    */
-Exit 99                                     /* bye, rc=99            */
+      if rc \= 0 then call error "EXECIO" rc/* error with execio */
+      "FREE FI(INDD)"                       /* release ddname */
+      do i = 1 to rec.0                     /* iterate vars and */
+         rec.i = Strip(rec.i,'T')           /* remove trailing space*/
+         say rec.i                          /* and display each one */
+      end i
+   end
+else
+   call error "SYSDSN" msg                  /* error with sysdsn() */
+exit 0
+error:                                      /* error handling */
+parse arg xfcn xmsg                         /* get passed args */
+say "error processing data set:" dsn        /* general error msg */
+if xfcn = 'ALLOC' then                      /* problem with allocate */
+   say "Return Code from ALLOC is:" xmsg    /* ALLOC message */
+if xfcn = 'EXECIO' then                     /* problem with execio */
+   say "Return Code from EXECIO is:" xmsg   /* EXECIO message */
+if xfcn = 'SYSDSN' then                     /* problem with data set */
+   say "error from SYSDSN is:" xmsg         /* SYSDSN message    */
+exit 99

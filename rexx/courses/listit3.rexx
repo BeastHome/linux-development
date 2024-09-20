@@ -1,30 +1,30 @@
-/* Rexx Listit3 exec (lab 10, part 2) */
-Parse Upper Arg dsn                          /* get data set name    */
-Do While dsn = ''                            /* is it null?          */
-   Say "Enter data set name:"                /* yup. Prompt them for */
-   Parse Upper Pull dsn                      /* new data set name    */
-End /* While */
-msg = SYSDSN(dsn)                            /* is data set okay?    */
-If msg = 'OK' Then                           /* yup, so go ahead     */
-   Do
-      indd = Stream(dsn,'C','OPEN')          /* open input stream    */
-      Do i = 1 While Lines(indd)             /* loop thru dsn recs   */
-         rec.i = Linein(indd)                /* read each line       */
-      End i
+/* REXX lab 10.2 */
+parse upper arg dsn
+do while dsn = ''                            /* is it null? */
+   say "Enter data set name:"                /* Yes - Prompt for */
+   parse upper pull dsn                      /* new data set name */
+end
+msg = SYSDSN(dsn)                            /* is data set okay? */
+if msg = 'OK' then                           /* Yes - so go ahead */
+   do
+      indd = Stream(dsn,'C','OPEN')          /* open input stream */
+      do i = 1 while lines(indd)             /* iterate dsn recs */
+         rec.i = linein(indd)                /* read each line */
+      end i
       rec.0 = i - 1                          /* number of lines read */
-      Do j = 1 To rec.0                      /* loop through vars    */
-         x = Lineout(,Strip(rec.j,'T'))      /* write output to term */
-         If x \= 0 Then Call Error 'Lineout' x/* problem? call error */
-      End j
-   End /* Then Do */
-Else
-   Call Error "SYSDSN" msg                   /* problem with SYSDSN  */
-Exit 0                                       /* bye, rc=0            */
-Error:                                       /* my error routine     */
-Parse Arg xfcn xmsg                          /* get passed arguments */
-Say "Error processing data set:" dsn         /* general error message*/
-If xfcn = 'SYSDSN' Then                      /* SYSDSN error?        */
-   Say "Error from SYSDSN is:" xmsg          /* say SYSDSN message   */
-If xfcn = 'Lineout' Then                     /* Lineout() error?     */
-   Say "Error from Lineout function."        /* say Lineout message  */
-Exit 99                                      /* bye, rc=99           */
+      do j = 1 to rec.0                      /* iterate vars */
+         x = lineout(,strip(rec.j,'T'))      /* write output to term */
+         if x \= 0 then call error 'Lineout' x/* call error on prob */
+      end j
+   end
+else
+   call error "SYSDSN" msg                   /* problem with SYSDSN */
+exit 0
+error:                                       /* error handling */
+parse arg xfcn xmsg                          /* get passed arguments */
+say "error processing data set:" dsn         /* general error message*/
+if xfcn = 'SYSDSN' then                      /* SYSDSN error? */
+   say "error from SYSDSN is:" xmsg          /* SYSDSN message */
+if xfcn = 'Lineout' then                     /* Lineout() error? */
+   say "error from Lineout function."        /* Lineout message */
+exit 99
