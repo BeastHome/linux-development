@@ -6,8 +6,14 @@ do i1 = 1 to 10000 by 1
    end
 end */
 
-"ls -l | rxqueue"
+/*"ls -l | rxqueue"
 DO i=1 WHILE queued() \= 0
   PARSE PULL line
-  SAY /*i || ") " || */ line
-END
+  SAY  || ") " || line
+END */
+
+input = 'This is the data.'
+
+Parse Var input 6 var1 var2 ' d'
+
+say var1 var2
