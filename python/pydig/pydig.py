@@ -2,7 +2,7 @@
 # Python program to mimic doing multiple dig commands in bash and providing the information parsed in an easy to read format.
 
 # Written by David M Harris on 16 March 2024
-# Last modified 26 March 2024
+# Last modified 18 Jan 2025
 # dave@harris-services.com
 
 # Import the normal system calls, as well as the dnspython, rich, tldextract and python-whois modules.
@@ -27,7 +27,7 @@ domain_name = tldextract.extract(entered_domain_name).registered_domain
 
 # Sets the resolver to one that works with DNSSEC.
 resolver = dns.resolver.Resolver()
-resolver.nameservers = ['4.2.2.1']
+resolver.nameservers = ['8.8.8.8']
 
 # Function to get A recrords from other records.
 def get_a_records(a_answers):
