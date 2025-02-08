@@ -8,15 +8,29 @@ import (
 )
 
 // Explicit typing of the variable as a string, and assigning an initial value
-var userName string = "Dave"
+// var userName string = "Dave"
+var userName string
 
 // Main function
 func main() {
-	if userName == "Dave" {
+	GetUser()
+
+	switch userName {
+	case "Dave", "David":
 		userName = "God"
 		fmt.Printf("!... Hello %v ...!\n", userName) // Variable substitution with printf
-	} else {
+	case "":
+		fmt.Printf("No name was entered...\n")
+	default:
 		fmt.Printf("!... Hello %v ...!\n", userName) // Variable substitution with printf
 	}
-	fmt.Println(quote.Go()) // Print with newline via Println
+	if userName != "" {
+		fmt.Println(quote.Go()) // Print with newline via Println
+	} else {
+	}
+}
+
+func GetUser() {
+	fmt.Print("Please enter your user name: ")
+	fmt.Scanln(&userName)
 }
